@@ -19,7 +19,6 @@ static void ngx_http_push_clean_timeouted_subscriber(ngx_event_t *ev)
 {
 	ngx_http_push_subscriber_t *subscriber = NULL;
 	ngx_http_request_t *r = NULL;
-	ngx_chain_t *chain = NULL;
 
 	subscriber = ev->data;
 	r = subscriber->request;
@@ -439,10 +438,10 @@ static ngx_int_t ngx_http_push_subscriber_handler(ngx_http_request_t *r) {
 						ngx_add_timer(&subscriber->event, cf->subscriber_timeout * 1000);
 					}
 
-					//r->read_event_handler = ngx_http_test_reading;
-					//r->write_event_handler = ngx_http_request_empty_handler;
+					r->read_event_handler = ngx_http_test_reading;
+					r->write_event_handler = ngx_http_request_empty_handler;
 					r->discard_body = 1;
-					//r->keepalive = 1; //stayin' alive!!
+					r->keepalive = 1; //stayin' alive!!
 					return NGX_DONE;
 					
 				case NGX_HTTP_PUSH_MECHANISM_INTERVALPOLL:
@@ -551,7 +550,7 @@ static ngx_int_t ngx_http_push_handle_subscriber_concurrency(ngx_http_request_t 
 			//in most reasonable cases, there'll be at most one subscriber on the
 			//channel. However, since settings are bound to locations and not
 			//specific channels, this assumption need not hold. Hence this broadcast.
-			ngx_int_t rc = ngx_http_push_broadcast_status_locked(channel, NGX_HTTP_NOT_FOUND, &NGX_HTTP_PUSH_HTTP_STATUS_409, r->connection->log, ngx_http_push_shpool);
+			ngx_http_push_broadcast_status_locked(channel, NGX_HTTP_NOT_FOUND, &NGX_HTTP_PUSH_HTTP_STATUS_409, r->connection->log, ngx_http_push_shpool);
 			ngx_shmtx_unlock(&ngx_http_push_shpool->mutex);
 
 			return NGX_OK;
